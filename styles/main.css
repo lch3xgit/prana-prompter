@@ -271,7 +271,6 @@ html, body {
   gap: var(--space-sm);
   min-width: 0;
   overflow-y: auto;
-  padding-right: var(--space-xs);
 }
 
 .col-controls::-webkit-scrollbar { width: 3px; }
