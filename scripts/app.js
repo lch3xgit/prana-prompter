@@ -1,6 +1,6 @@
 /* ============================================================
-   Prana-Prompter v0.3 — Main Application
-   2-column layout, 3-row teleprompter, iridescent theme
+   Prana-Prompter v0.4 — Main Application
+   2-column layout, 2-row teleprompter, music strip, chimes
    ============================================================ */
 
 (function () {
@@ -12,7 +12,7 @@
   let dpr = 1;
 
   // ---- State ----
-  let timeline = null; // from PranaSession.flatten()
+  let timeline = null;
   let session = null;
   let isPlaying = false;
   let isPaused = false;
@@ -22,24 +22,22 @@
 
   // ---- DOM refs ----
   const el = {
+    sessionSelect:  document.getElementById('sessionSelect'),
     sessionName:    document.getElementById('sessionName'),
     phaseLabel:     document.getElementById('phaseLabel'),
     phaseCountdown: document.getElementById('phaseCountdown'),
     totalTimer:     document.getElementById('totalTimer'),
     cueText:        document.getElementById('cueText'),
     cueNext:        document.getElementById('cueNext'),
-    chordCurrent:   document.getElementById('chordCurrent'),
-    chordNext:      document.getElementById('chordNext'),
     playBtn:        document.getElementById('playBtn'),
-    pauseBtn:       document.getElementById('pauseBtn'),
     stopBtn:        document.getElementById('stopBtn'),
     loadBtn:        document.getElementById('loadBtn'),
     themeToggle:    document.getElementById('themeToggle'),
     fileInput:      document.getElementById('fileInput'),
     musicVol:       document.getElementById('musicVol'),
     musicVolVal:    document.getElementById('musicVolVal'),
-    breathVol:      document.getElementById('breathVol'),
-    breathVolVal:   document.getElementById('breathVolVal'),
+    chimeVol:       document.getElementById('chimeVol'),
+    chimeVolVal:    document.getElementById('chimeVolVal'),
     cueVol:         document.getElementById('cueVol'),
     cueVolVal:      document.getElementById('cueVolVal'),
     elapsedTime:    document.getElementById('elapsedTime'),
@@ -48,21 +46,71 @@
     statusLeft:     document.getElementById('statusLeft'),
   };
 
-  // ---- Music Player (Web Audio) ----
+  // ---- Audio ----
   let audioCtx = null;
   let musicSource = null;
   let musicGain = null;
+  let chimeGain = null;
   let musicBuffer = null;
   let musicPlaying = false;
   let musicStartTime = 0;
   let musicOffset = 0;
+
+  // ---- Played sounds tracking ----
+  let playedSounds = new Set();
 
   function initAudioCtx() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       musicGain = audioCtx.createGain();
       musicGain.connect(audioCtx.destination);
+      chimeGain = audioCtx.createGain();
+      chimeGain.connect(audioCtx.destination);
     }
+  }
+
+  // ---- Chime / Sound generation ----
+  function playChime(note, type) {
+    if (!audioCtx) initAudioCtx();
+    const now = audioCtx.currentTime;
+    const vol = chimeGain ? chimeGain.gain.value : 0.5;
+
+    if (type === 'click') {
+      // Wood block / click sound
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+      gain.gain.setValueAtTime(vol * 0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } else {
+      // Default chime (sine wave bell)
+      const noteFreq = noteToFreq(note || 'C5');
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(noteFreq, now);
+      gain.gain.setValueAtTime(vol * 0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 2.5);
+    }
+  }
+
+  function noteToFreq(note) {
+    const notes = { 'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63,
+                    'F4': 349.23, 'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00,
+                    'A#4': 466.16, 'B4': 493.88, 'C5': 523.25, 'C#5': 554.37, 'D5': 587.33,
+                    'D#5': 622.25, 'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'G5': 783.99,
+                    'G#5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'B5': 987.77 };
+    return notes[note] || 523.25;
   }
 
   // ---- Helpers ----
@@ -82,7 +130,9 @@
       ballGlow: 'rgba(167, 139, 250, 0.35)',
       grid:     '#1A1E3A',
       label:    '#4A4766',
-      chordLine:'#FBBF24',
+      stripBg:  'rgba(123, 63, 217, 0.08)',
+      stripText:'#A78BFA',
+      stripBorder:'rgba(123, 63, 217, 0.25)',
     };
   }
 
@@ -109,7 +159,6 @@
         }
       }
     }
-    // Past end: return last known level
     const last = timeline.phases[timeline.phases.length - 1];
     if (last) return last.phase === 'hold_in' ? 1 : 0;
     return 0.5;
@@ -128,38 +177,38 @@
   function getCueAtTime(t) {
     if (!session || !session.cues || session.cues.length === 0) return null;
     const cues = [...session.cues].sort((a, b) => a.at - b.at);
-
     let active = null;
     let next = null;
-
     for (let i = 0; i < cues.length; i++) {
-      if (cues[i].at <= t) {
-        active = cues[i];
-      } else if (!next) {
-        next = cues[i];
-        break;
-      }
+      if (cues[i].at <= t) { active = cues[i]; }
+      else if (!next) { next = cues[i]; break; }
     }
     return { active, next };
   }
 
-  // ---- Find active and next chord at time ----
+  // ---- Find active and next music cue at time ----
   function getChordAtTime(t) {
     if (!session || !session.chords || session.chords.length === 0) return null;
     const chords = [...session.chords].sort((a, b) => a.at - b.at);
-
     let active = null;
     let next = null;
-
     for (let i = 0; i < chords.length; i++) {
-      if (chords[i].at <= t) {
-        active = chords[i];
-      } else if (!next) {
-        next = chords[i];
-        break;
-      }
+      if (chords[i].at <= t) { active = chords[i]; }
+      else if (!next) { next = chords[i]; break; }
     }
     return { active, next };
+  }
+
+  // ---- Get current music cue text for strip ----
+  function getCurrentChordText(t) {
+    if (!session || !session.chords || session.chords.length === 0) return '';
+    const sorted = [...session.chords].sort((a, b) => a.at - b.at);
+    let active = null;
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i].at <= t) { active = sorted[i]; }
+      else break;
+    }
+    return active ? active.chord : '';
   }
 
   // ---- Draw Graph ----
@@ -171,7 +220,8 @@
 
     const margin = 30;
     const ballR = 22;
-    const drawH = h - 2 * margin - 2 * ballR;
+    const stripH = 28; // music strip height
+    const drawH = h - 2 * margin - 2 * ballR - stripH - 10;
     const centerX = w / 2;
 
     const visiblePast = 8;
@@ -186,7 +236,7 @@
 
     // Grid lines
     const topY = margin + ballR;
-    const botY = margin + ballR + drawH;
+    const botY = topY + drawH;
     const midY = topY + drawH / 2;
 
     ctx.setLineDash([6, 4]);
@@ -210,7 +260,7 @@
     ctx.strokeStyle = colors.ball;
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.25;
-    ctx.beginPath(); ctx.moveTo(centerX, margin); ctx.lineTo(centerX, h - margin); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(centerX, margin); ctx.lineTo(centerX, h - margin - stripH - 10); ctx.stroke();
     ctx.globalAlpha = 1.0;
 
     ctx.font = '9px JetBrains Mono, monospace';
@@ -224,11 +274,10 @@
     const currentLevel = getBreathLevel(currentT);
     const currentY = topY + drawH * (1 - currentLevel);
 
-    // Trace: SINGLE continuous path per side
-    const step = 0.02;
-
+    // Phases (for past trace)
     function buildPoints(startT, endT) {
       const pts = [];
+      const step = 0.02;
       for (let t = startT; t < endT; t += step) {
         pts.push({ t, level: getBreathLevel(t) });
       }
@@ -291,9 +340,103 @@
     ctx.arc(centerX, currentY, ballR, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    // ---- Music Cue Strip ----
+    const stripY = h - margin - stripH;
+    if (session && session.chords && session.chords.length > 0) {
+      // Draw strip background
+      ctx.fillStyle = colors.stripBg;
+      ctx.fillRect(margin, stripY, w - 2 * margin, stripH);
+      ctx.strokeStyle = colors.stripBorder;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(margin, stripY, w - 2 * margin, stripH);
+
+      // Draw music cue blocks
+      const sorted = [...session.chords].sort((a, b) => a.at - b.at);
+      const stripStart = currentT - visiblePast;
+      const stripEnd = currentT + visibleFuture;
+      const stripPxPerSec = (w - 2 * margin) / (visiblePast + visibleFuture);
+
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let i = 0; i < sorted.length; i++) {
+        const c = sorted[i];
+        const nextC = sorted[i + 1];
+        const blockStart = c.at;
+        const blockEnd = nextC ? nextC.at : (timeline ? timeline.totalTime : blockStart + 60);
+
+        // Check if visible
+        if (blockEnd < stripStart || blockStart > stripEnd) continue;
+
+        const relStart = blockStart - currentT;
+        const relEnd = blockEnd - currentT;
+        const x1 = centerX + relStart * stripPxPerSec;
+        const x2 = centerX + relEnd * stripPxPerSec;
+        const drawX1 = Math.max(margin, x1);
+        const drawX2 = Math.min(w - margin, x2);
+        const drawW = Math.max(0, drawX2 - drawX1);
+
+        if (drawW <= 0) continue;
+
+        // Alternate subtle colors
+        const isActive = currentT >= blockStart && currentT < blockEnd;
+        ctx.fillStyle = isActive ? 'rgba(167, 139, 250, 0.2)' : 'rgba(123, 63, 217, 0.08)';
+        ctx.fillRect(drawX1, stripY + 1, drawW, stripH - 2);
+
+        // Text
+        if (drawW > 20 && c.chord) {
+          ctx.fillStyle = isActive ? colors.ball : colors.stripText;
+          ctx.font = isActive ? 'bold 10px JetBrains Mono, monospace' : '10px JetBrains Mono, monospace';
+          const textX = (drawX1 + drawX2) / 2;
+          const textY = stripY + stripH / 2;
+          ctx.fillText(c.chord, textX, textY);
+        }
+
+        // Separator line between blocks
+        if (nextC) {
+          ctx.strokeStyle = 'rgba(123, 63, 217, 0.2)';
+          ctx.lineWidth = 1;
+          const sepX = centerX + (nextC.at - currentT) * stripPxPerSec;
+          if (sepX >= margin && sepX <= w - margin) {
+            ctx.beginPath();
+            ctx.moveTo(sepX, stripY + 1);
+            ctx.lineTo(sepX, stripY + stripH - 1);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Left edge of strip
+      ctx.fillStyle = colors.label;
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('▶', margin + 4, stripY + stripH / 2);
+
+      // Current chord indicator
+      const currentChord = getCurrentChordText(currentT);
+      if (currentChord) {
+        ctx.textAlign = 'right';
+        ctx.fillStyle = colors.ball;
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.fillText(currentChord, w - margin - 4, stripY + stripH / 2);
+      }
+    } else {
+      // No chords: just show empty strip
+      ctx.fillStyle = 'rgba(123, 63, 217, 0.04)';
+      ctx.fillRect(margin, stripY, w - 2 * margin, stripH);
+      ctx.strokeStyle = 'rgba(123, 63, 217, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(margin, stripY, w - 2 * margin, stripH);
+      ctx.fillStyle = colors.label;
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('no music cues', centerX, stripY + stripH / 2);
+    }
   }
 
-  // ---- Update UI (timers, cues, chords) ----
+  // ---- Update UI (timers, cues) ----
   function updateUI(elapsed) {
     const t = elapsed;
     const total = timeline ? timeline.totalTime : 0;
@@ -335,21 +478,20 @@
       el.cueNext.textContent = '';
     }
 
-    // Chords (Row C)
-    const chord = getChordAtTime(t);
-    if (chord && chord.active) {
-      el.chordCurrent.textContent = `♪ ${chord.active.chord}`;
-    } else {
-      el.chordCurrent.textContent = '—';
-    }
-
-    if (chord && chord.next) {
-      el.chordNext.textContent = `→ ${chord.next.chord}`;
-    } else {
-      el.chordNext.textContent = '';
-    }
-
+    // Status
     el.statusLeft.textContent = `${isPlaying ? 'playing' : 'ready'}: ${session ? session.name : '—'} (${fmtTime(remaining)})`;
+  }
+
+  // ---- Play sounds at their timestamps ----
+  function playSoundsAtTime(t) {
+    if (!session || !session.sounds || session.sounds.length === 0) return;
+    for (const s of session.sounds) {
+      const key = `${s.at}-${s.type}-${s.note || ''}`;
+      if (s.at <= t && !playedSounds.has(key)) {
+        playChime(s.note, s.type);
+        playedSounds.add(key);
+      }
+    }
   }
 
   // ---- Animation Loop ----
@@ -362,6 +504,7 @@
       return;
     }
 
+    playSoundsAtTime(elapsed);
     drawGraph(elapsed);
     updateUI(elapsed);
     animFrame = requestAnimationFrame(loop);
@@ -384,6 +527,8 @@
     isPlaying = true;
     isPaused = false;
     startTime = performance.now();
+    // Reset played sounds
+    playedSounds.clear();
     requestWakeLock();
     loop();
     updateTransportUI();
@@ -406,20 +551,18 @@
     pauseTime = 0;
     if (animFrame) cancelAnimationFrame(animFrame);
     releaseWakeLock();
+    playedSounds.clear();
     drawGraph(0);
     updateUI(0);
     el.phaseLabel.textContent = '—';
     el.phaseCountdown.textContent = '0.0s';
     el.cueText.textContent = 'awaiting session...';
     el.cueText.classList.add('inactive');
-    el.chordCurrent.textContent = '—';
-    el.chordNext.textContent = '';
     updateTransportUI();
   }
 
   function updateTransportUI() {
     if (el.playBtn) el.playBtn.disabled = isPlaying && !isPaused;
-    if (el.pauseBtn) el.pauseBtn.disabled = !isPlaying || isPaused;
     if (el.stopBtn) el.stopBtn.disabled = !isPlaying && !isPaused;
   }
 
@@ -430,6 +573,7 @@
       setSession(s);
       await PranaSession.save(s);
       el.statusLeft.textContent = `loaded: ${s.name}`;
+      updateSessionSelector();
     } catch (err) {
       el.statusLeft.textContent = `error: ${err.message}`;
     }
@@ -443,6 +587,36 @@
     el.statusLeft.textContent = `ready: ${s.name} (${fmtTime(timeline.totalTime)})`;
     drawGraph(0);
     updateUI(0);
+  }
+
+  // ---- Session Selector ----
+  async function updateSessionSelector() {
+    try {
+      const names = await PranaSession.list();
+      el.sessionSelect.innerHTML = '<option value="">— select session —</option>';
+      for (const name of names) {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        el.sessionSelect.appendChild(opt);
+      }
+    } catch (e) {
+      console.error('Failed to list sessions:', e);
+    }
+  }
+
+  async function handleSessionSelect(e) {
+    const name = e.target.value;
+    if (!name) return;
+    try {
+      const s = await PranaSession.load(name);
+      if (s) {
+        setSession(s);
+        el.statusLeft.textContent = `loaded: ${s.name}`;
+      }
+    } catch (err) {
+      el.statusLeft.textContent = `error loading session: ${err.message}`;
+    }
   }
 
   // ---- Wake Lock ----
@@ -475,17 +649,21 @@
 
   // ---- Sliders ----
   function setupSliders() {
-    // Music slider controls gain
     if (el.musicVol) {
       el.musicVol.addEventListener('input', () => {
         if (el.musicVolVal) el.musicVolVal.textContent = el.musicVol.value;
         if (musicGain) musicGain.gain.value = el.musicVol.value / 100;
       });
     }
-    const pairs = [[el.breathVol, el.breathVolVal], [el.cueVol, el.cueVolVal]];
-    for (const [slider, display] of pairs) {
-      if (!slider || !display) continue;
-      slider.addEventListener('input', () => { display.textContent = slider.value; });
+    if (el.chimeVol) {
+      el.chimeVol.addEventListener('input', () => {
+        if (el.chimeVolVal) el.chimeVolVal.textContent = el.chimeVol.value;
+      });
+    }
+    if (el.cueVol) {
+      el.cueVol.addEventListener('input', () => {
+        if (el.cueVolVal) el.cueVolVal.textContent = el.cueVol.value;
+      });
     }
   }
 
@@ -537,13 +715,21 @@
     }
   }
 
+  // ---- Listen for composer save event ----
+  window.addEventListener('pranaSessionSaved', (e) => {
+    if (e.detail && e.detail.session) {
+      setSession(e.detail.session);
+      el.statusLeft.textContent = `loaded: ${e.detail.session.name}`;
+      updateSessionSelector();
+    }
+  });
+
   // ---- Init ----
   function init() {
     resizeCanvas();
     window.addEventListener('resize', () => { resizeCanvas(); drawGraph(0); });
 
     if (el.playBtn) el.playBtn.addEventListener('click', playSession);
-    if (el.pauseBtn) el.pauseBtn.addEventListener('click', pauseSession);
     if (el.stopBtn) el.stopBtn.addEventListener('click', stopSession);
     if (el.themeToggle) el.themeToggle.addEventListener('click', toggleTheme);
 
@@ -553,6 +739,8 @@
         if (e.target.files.length) { loadSessionFile(e.target.files[0]); e.target.value = ''; }
       });
     }
+
+    if (el.sessionSelect) el.sessionSelect.addEventListener('change', handleSessionSelect);
 
     // Music controls
     const musicLoadBtn = document.getElementById('musicLoadBtn');
@@ -573,7 +761,7 @@
     // Load default session
     const defaultSession = {
       name: 'Holotropic 45min',
-      version: '1.1',
+      version: '2.0',
       created: new Date().toISOString(),
       modified: new Date().toISOString(),
       breath: [
@@ -606,10 +794,15 @@
         { at: 150, chord: "F" },
         { at: 165, chord: "G" },
       ],
+      sounds: [
+        { at: 0,  type: 'chime', note: 'C5' },
+        { at: 120, type: 'chime', note: 'E5' },
+      ],
       rounds: 36,
       totalDuration: 2700,
     };
     setSession(defaultSession);
+    updateSessionSelector();
     updateUI(0);
   }
 

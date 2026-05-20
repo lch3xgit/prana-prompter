@@ -20,6 +20,10 @@
         <span class="brand-text">prana-prompter</span>
       </div>
       <div class="topbar-right">
+        <!-- Session Selector -->
+        <select id="sessionSelect" class="session-select" title="Select session">
+          <option value="">— select session —</option>
+        </select>
         <span id="sessionName" class="session-name">—</span>
         <button id="themeToggle" class="theme-btn" aria-label="Toggle dark/light mode" title="Toggle dark / light">
           <span class="theme-icon">◐</span>
@@ -36,7 +40,7 @@
           <canvas id="pacer"></canvas>
         </div>
 
-        <!-- Teleprompter (3 rows) -->
+        <!-- Teleprompter (2 rows) -->
         <div class="teleprompter">
           <!-- Row A: Phase + Timers -->
           <div class="tp-row-a">
@@ -49,12 +53,6 @@
           <div class="tp-row-b">
             <div id="cueText" class="cue-text">awaiting session...</div>
             <div id="cueNext" class="cue-next"></div>
-          </div>
-
-          <!-- Row C: Music Notation -->
-          <div class="tp-row-c">
-            <span id="chordCurrent" class="chord-current">—</span>
-            <span id="chordNext" class="chord-next"></span>
           </div>
         </div>
       </div>
@@ -88,6 +86,15 @@
           </div>
         </div>
 
+        <!-- Composer -->
+        <div class="control-section">
+          <div class="section-label">composer</div>
+          <div class="composer-buttons">
+            <button id="openComposerBtn" class="btn btn-secondary" title="Open Session Composer (C)">compose</button>
+            <button id="exportSessionBtn" class="btn btn-tiny" title="Export current session to file">export</button>
+          </div>
+        </div>
+
         <!-- Audio -->
         <div class="control-section">
           <div class="section-label">audio</div>
@@ -106,11 +113,11 @@
           </div>
           <div class="track-control">
             <div class="track-header">
-              <span class="track-name-label">breath</span>
+              <span class="track-name-label">chime</span>
             </div>
             <div class="slider-wrap">
-              <input id="breathVol" type="range" min="0" max="100" value="50" class="slider">
-              <span id="breathVolVal" class="slider-val">50</span>
+              <input id="chimeVol" type="range" min="0" max="100" value="50" class="slider">
+              <span id="chimeVolVal" class="slider-val">50</span>
             </div>
           </div>
           <div class="track-control">
@@ -129,14 +136,71 @@
     <!-- Status Bar -->
     <footer class="status-bar">
       <span id="statusLeft">ready</span>
-      <span id="statusRight">v0.3.0</span>
+      <span id="statusRight">v0.4.0</span>
     </footer>
+  </div>
+
+  <!-- Composer Modal -->
+  <div id="composerModal" class="modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2 class="modal-title">Session Composer</h2>
+        <button id="closeComposerBtn" class="modal-close" aria-label="Close">&times;</button>
+      </header>
+      <div class="modal-body">
+        <div class="composer-grid">
+          <!-- Left: Editor -->
+          <div class="composer-editor">
+            <label class="composer-label">Session Name</label>
+            <input type="text" id="composerSessionName" class="composer-input" placeholder="e.g., Morning Pranayama" value="">
+            <label class="composer-label">Breath Script</label>
+            <textarea id="composerBreath" class="composer-textarea" placeholder="repeat 30: inhale 2, hold in 2, exhale 2, hold out 2
+hold out 45
+repeat 30: inhale 2, exhale 2"></textarea>
+
+            <label class="composer-label">Text Cues (tcue)</label>
+            <textarea id="composerTexts" class="composer-textarea" placeholder='tcue: "Settle into the breath.", 0
+tcue: "Deepen the inhale.", 60'></textarea>
+
+            <label class="composer-label">Music Cues (mcue)</label>
+            <textarea id="composerChords" class="composer-textarea" placeholder='mcue: "C Major", 0
+mcue: "Am", 900
+mcue: "", 1800'></textarea>
+
+            <label class="composer-label">Sound Cues (sc)</label>
+            <textarea id="composerSounds" class="composer-textarea" placeholder='sc: "chime", "C5", 0
+sc: "click", 900'></textarea>
+          </div>
+          <!-- Right: Preview -->
+          <div class="composer-preview">
+            <div class="preview-header">
+              <span class="preview-title">Timeline Preview</span>
+              <span id="previewDuration" class="preview-duration">Total: —</span>
+            </div>
+            <div id="previewTimeline" class="preview-timeline">
+              <div class="preview-empty">Enter breath script above to generate preview</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button id="parseComposerBtn" class="btn btn-secondary">preview</button>
+        <button id="saveComposerBtn" class="btn btn-accent">save &amp; load</button>
+        <div class="modal-actions">
+          <button id="importComposerBtn" class="btn btn-tiny">import json</button>
+          <button id="exportComposerBtn" class="btn btn-tiny">export json</button>
+        </div>
+        <input type="file" id="composerFileInput" accept=".json" style="display:none">
+      </footer>
+    </div>
   </div>
 
   <!-- Hidden file inputs -->
   <input type="file" id="fileInput" accept=".json,.prana" style="display:none">
 
   <script src="scripts/session.js"></script>
+  <script src="scripts/composer.js"></script>
   <script src="scripts/app.js"></script>
 </body>
 </html>
