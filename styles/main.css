@@ -116,10 +116,10 @@ html, body {
 .main-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   flex: 1;
   min-height: 0;
-  padding: var(--space-md);
+  padding: var(--space-sm);
   overflow: hidden;
 }
 
@@ -129,7 +129,7 @@ html, body {
 .col-pacer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   min-width: 0;
   overflow: hidden;
 }
@@ -268,7 +268,7 @@ html, body {
 .col-controls {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   min-width: 0;
   overflow-y: auto;
   padding-right: var(--space-xs);
