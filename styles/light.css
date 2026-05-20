@@ -1,32 +1,44 @@
 /* ============================================================
-   Prana-Prompter — Light Theme
-   High-contrast blacks on warm white (for bright rooms)
+   Prana-Prompter — Light Theme (Warm)
+   Soft cream with teal & amber accents
    ============================================================ */
 
 [data-theme="light"] {
-  --color-bg: #F5F0EB;
-  --color-surface: #FFFFFF;
-  --bg-primary: #F5F0EB;
-  --bg-secondary: #EDE8E2;
-  --bg-tertiary: #E8E3DD;
-  --border: #D4CFC5;
-  --text-primary: #1A1A1A;
-  --text-secondary: #7A7265;
-  --text-muted: #B8B0A5;
-  --accent: #8B5A2B;
-  --accent-bright: #A67B5B;
-  --danger: #CC4444;
+  /* Backgrounds */
+  --bg-primary:   #F5F0EB;
+  --bg-canvas:  #FBF8F5;
+  --bg-card:    #FFFFFF;
+  --bg-topbar:  #EFEBE6;
+  --bg-hover:   rgba(13, 115, 119, 0.06);
+  --bg-chord:   #F8F5F0;
 
-  /* Pacer canvas colors */
-  --pacer-bg: #E8E3DD;
-  --pacer-past: #C4BCB0;
-  --pacer-future: #8B5A2B;
-  --pacer-ball: #6B4425;
-  --pacer-ball-glow: rgba(107, 68, 37, 0.25);
-  --pacer-grid: #D4CFC5;
-  --pacer-label: #888888;
+  /* Text */
+  --text-primary:   #1A1A2E;
+  --text-secondary: #4A4860;
+  --text-muted:     #9E9A90;
 
-  /* Canvas background */
-  background-color: var(--color-bg);
-  color: var(--text-primary);
+  /* Accent: deep teal */
+  --accent:       #0D7377;
+  --accent-hover: #14B8A6;
+
+  /* Danger */
+  --danger: #D94650;
+
+  /* Chords */
+  --chord-accent: #B45309;
+
+  /* Borders */
+  --border: rgba(13, 115, 119, 0.12);
+
+  /* Pacer colors */
+  --pacer-bg:    var(--bg-canvas);
+  --pacer-past:  #D4CFC8;
+  --pacer-future: #0D7377;
+  --pacer-ball:  #14B8A6;
+  --pacer-ball-glow: rgba(20, 184, 166, 0.25);
+  --pacer-grid:  #E8E4DF;
+  --pacer-label: #9E9A90;
+
+  /* Button */
+  --bg-button: var(--bg-card);
 }

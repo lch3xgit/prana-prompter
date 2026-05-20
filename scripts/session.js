@@ -6,34 +6,33 @@
 const PranaSession = (() => {
 
   const DB_NAME = 'prana-prompter';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2; // bumped for chords field
   const STORE_NAME = 'sessions';
   let db = null;
 
-  // ---- Session Schema ----
-  // A session defines a complete breathwork sequence:
+  // ---- Session Schema v1.1 ----
   // {
   //   name: string,
-  //   version: '1.0',
+  //   version: '1.1',
   //   created: ISO date,
   //   modified: ISO date,
-  //   breath: [ { phase: 'inhale'|'hold_in'|'exhale'|'hold_out', duration: number, cue: string? } ],
-  //   cues: [ { at: number (seconds from start), text: string, voice: boolean? } ],
-  //   music: { source: string?, volume: number, duckDuringCues: boolean },
-  //   rounds: number | 'auto'  // 'auto' = repeat until total duration
-  //   totalDuration: number | null  // if set, overrides round-based calc
+  //   breath: [ { phase: 'inhale'|'hold_in'|'exhale'|'hold_out', duration: number } ],
+  //   cues: [     { at: number (seconds from start), text: string } ],
+  //   chords: [   { at: number, chord: string } ],
+  //   rounds: number | 'auto',
+  //   totalDuration: number | null
   // }
 
   function createSession(name, breathPhases, options = {}) {
     const now = new Date().toISOString();
     return {
       name: name || 'untitled',
-      version: '1.0',
+      version: '1.1',
       created: now,
       modified: now,
       breath: breathPhases || [],
       cues: options.cues || [],
-      music: options.music || { source: null, volume: 0.7, duckDuringCues: true },
+      chords: options.chords || [],
       rounds: options.rounds || 1,
       totalDuration: options.totalDuration || null,
     };

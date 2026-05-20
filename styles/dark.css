@@ -1,32 +1,44 @@
 /* ============================================================
-   Prana-Prompter — Dark Theme
-   High-contrast terminal greens on near-black
+   Prana-Prompter — Dark Theme (Iridescent)
+   Deep indigo/violet aurora with teal accents
    ============================================================ */
 
 [data-theme="dark"] {
-  --color-bg: #0D0D0D;
-  --color-surface: #141414;
-  --bg-primary: #0D0D0D;
-  --bg-secondary: #141414;
-  --bg-tertiary: #1A1A1A;
-  --border: #2A2A2A;
-  --text-primary: #D4D4D4;
-  --text-secondary: #888888;
-  --text-muted: #555555;
-  --accent: #A67B5B;
-  --accent-bright: #C89F7B;
-  --danger: #CC4444;
+  /* Backgrounds */
+  --bg-primary:   #0A0E1A;
+  --bg-canvas:  #0D1224;
+  --bg-card:    #11162B;
+  --bg-topbar:  #0D1020;
+  --bg-hover:   rgba(123, 63, 217, 0.08);
+  --bg-chord:   #0E1020;
 
-  /* Pacer canvas colors */
-  --pacer-bg: #1A1A1A;
-  --pacer-past: #444444;
-  --pacer-future: #A67B5B;
-  --pacer-ball: #C89F7B;
-  --pacer-ball-glow: rgba(200, 159, 123, 0.4);
-  --pacer-grid: #333333;
-  --pacer-label: #888888;
+  /* Text */
+  --text-primary:   #E8E4F0;
+  --text-secondary: #A8A3C0;
+  --text-muted:     #5A5570;
 
-  /* Canvas background */
-  background-color: var(--color-bg);
-  color: var(--text-primary);
+  /* Accent: electric violet/iridescent */
+  --accent:       #A78BFA;
+  --accent-hover: #C4B5FD;
+
+  /* Danger */
+  --danger: #F472B6;
+
+  /* Chords */
+  --chord-accent: #FBBF24;
+
+  /* Borders */
+  --border: rgba(123, 63, 217, 0.15);
+
+  /* Pacer colors (generated at runtime from JS) */
+  --pacer-bg:    var(--bg-canvas);
+  --pacer-past:  #3B3B55;
+  --pacer-future: #7B3FD9;
+  --pacer-ball:  #A78BFA;
+  --pacer-ball-glow: rgba(167, 139, 250, 0.35);
+  --pacer-grid:  #1A1E3A;
+  --pacer-label: #4A4766;
+
+  /* Button */
+  --bg-button: var(--bg-card);
 }
