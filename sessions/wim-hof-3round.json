@@ -1,0 +1,32 @@
+{
+  "name": "Wim Hof 3-Round",
+  "version": "1.0",
+  "created": "2026-05-19T20:00:00.000Z",
+  "modified": "2026-05-19T20:00:00.000Z",
+  "breath": [
+    { "phase": "inhale",   "duration": 1.5, "cue": "Breathe in deep..." },
+    { "phase": "exhale",   "duration": 0.5, "cue": "Let go..." },
+    { "phase": "hold_out", "duration": 60,  "cue": "Hold... stay with it..." },
+    { "phase": "inhale",   "duration": 15,  "cue": "Recovery breath — hold in..." },
+    { "phase": "hold_in",  "duration": 15,  "cue": null }
+  ],
+  "cues": [
+    { "at": 0,   "text": "Round 1 — 30 deep breaths" },
+    { "at": 90,  "text": "Exhale and hold. Stay relaxed. Stay still." },
+    { "at": 150, "text": "Recovery breath. Fill up. Hold." },
+    { "at": 180, "text": "Round 2 — 30 deep breaths" },
+    { "at": 270, "text": "Exhale and hold. You may feel tingling. That's normal." },
+    { "at": 330, "text": "Recovery breath. Hold." },
+    { "at": 360, "text": "Round 3 — final 30 breaths" },
+    { "at": 450, "text": "Exhale and hold. Last round. You've got this." },
+    { "at": 510, "text": "Recovery breath. Hold. Then release and rest." },
+    { "at": 540, "text": "Session complete. Rest and integrate." }
+  ],
+  "music": {
+    "source": null,
+    "volume": 0.5,
+    "duckDuringCues": true
+  },
+  "rounds": 3,
+  "totalDuration": null
+}

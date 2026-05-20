@@ -1,0 +1,32 @@
+/* ============================================================
+   Prana-Prompter — Dark Theme
+   High-contrast terminal greens on near-black
+   ============================================================ */
+
+[data-theme="dark"] {
+  --color-bg: #0D0D0D;
+  --color-surface: #141414;
+  --bg-primary: #0D0D0D;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1A1A1A;
+  --border: #2A2A2A;
+  --text-primary: #D4D4D4;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  --accent: #A67B5B;
+  --accent-bright: #C89F7B;
+  --danger: #CC4444;
+
+  /* Pacer canvas colors */
+  --pacer-bg: #1A1A1A;
+  --pacer-past: #444444;
+  --pacer-future: #A67B5B;
+  --pacer-ball: #C89F7B;
+  --pacer-ball-glow: rgba(200, 159, 123, 0.4);
+  --pacer-grid: #333333;
+  --pacer-label: #888888;
+
+  /* Canvas background */
+  background-color: var(--color-bg);
+  color: var(--text-primary);
+}

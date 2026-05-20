@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Prana-Prompter</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0D0D0D">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Prana-Prompter">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/dark.css" id="theme-dark">
+  <link rel="stylesheet" href="styles/light.css" id="theme-light" disabled>
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ═════════════════ TOP BAR ═════════════════ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="hostname">root@prana:~$</span>
+        <span class="cursor-blink">█</span>
+      </div>
+      <div class="topbar-right">
+        <span id="sessionName" class="session-label">no session loaded</span>
+        <button id="themeToggle" class="btn-icon" title="Toggle theme">◐</button>
+      </div>
+    </header>
+
+    <!-- ═════════════════ HEADER ROW: Phase + Timer + Session Timer ═════════════════ -->
+    <section class="header-row">
+      <div class="header-col phase-display">
+        <span id="phaseLabel" class="phase-label">—</span>
+        <span id="phaseCountdown" class="phase-countdown">0.0s</span>
+      </div>
+      <div class="header-col session-timer-display">
+        <span class="timer-label">REMAINING</span>
+        <span id="totalTimer" class="total-timer">00:00</span>
+      </div>
+    </section>
+
+    <!-- ═════════════════ MAIN CONTENT: Pacer (2/3) + Teleprompter (1/3) ═════════════════ -->
+    <div class="main-content">
+      <!-- Pacer Canvas -->
+      <section class="pacer-section">
+        <canvas id="pacer"></canvas>
+      </section>
+
+      <!-- Teleprompter + Cues -->
+      <section class="teleprompter-section">
+        <!-- Active Cue (large, readable — the teleprompter) -->
+        <div class="active-cue-box">
+          <p id="activeCueText" class="active-cue-text">awaiting session...</p>
+          <span id="activeCueTimestamp" class="active-cue-ts"></span>
+        </div>
+
+        <!-- Cue Timeline (past / current / future) -->
+        <div class="cue-timeline">
+          <div id="pastCue" class="cue-item cue-past">
+            <span class="cue-ts">—</span>
+            <span class="cue-text">—</span>
+          </div>
+          <div id="currentCue" class="cue-item cue-current">
+            <span class="cue-ts">—</span>
+            <span class="cue-text">—</span>
+          </div>
+          <div id="nextCue" class="cue-item cue-future">
+            <span class="cue-ts">—</span>
+            <span class="cue-text">—</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ═════════════════ COMPACT CONTROL BAR ═════════════════ -->
+    <section class="control-bar">
+      <!-- Transport -->
+      <div class="transport-row">
+        <button id="loadBtn" class="btn secondary">load</button>
+        <button id="playBtn" class="btn primary">play</button>
+        <button id="pauseBtn" class="btn secondary" disabled>pause</button>
+        <button id="stopBtn" class="btn danger" disabled>stop</button>
+        <button id="skipBtn" class="btn secondary" disabled>skip</button>
+        <span class="transport-hints">
+          <span class="shortcut">SPC</span>
+          <span class="shortcut">ENT↷</span>
+          <span class="shortcut">R</span>
+        </span>
+      </div>
+      <!-- Audio Mix (inline) -->
+      <div class="mix-row">
+        <div class="track-inline">
+          <span class="track-label">music</span>
+          <button id="musicLoadBtn" class="btn-tiny" title="Load music file">+</button>
+          <button id="musicPlayBtn" class="btn-tiny" title="Play/Pause music" disabled>▸</button>
+          <input id="musicVol" type="range" min="0" max="100" value="70" class="slider">
+          <span id="musicVolVal" class="track-val">70</span>
+          <span id="musicName" class="track-name">—</span>
+          <input type="file" id="musicFileInput" accept="audio/*" style="display:none">
+        </div>
+        <div class="track-inline">
+          <span class="track-label">breath</span>
+          <input id="breathVol" type="range" min="0" max="100" value="50" class="slider">
+          <span id="breathVolVal" class="track-val">50</span>
+        </div>
+        <div class="track-inline">
+          <span class="track-label">cues</span>
+          <input id="cueVol" type="range" min="0" max="100" value="80" class="slider">
+          <span id="cueVolVal" class="track-val">80</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════════ STATUS BAR ═════════════════ -->
+    <footer class="statusbar">
+      <span id="statusLeft">offline ready</span>
+      <span class="status-info">
+        <span id="currentPhase" class="status-chip">—</span>
+        <span id="currentRound" class="status-chip">R—</span>
+        <span id="elapsedTime">00:00</span>
+        <span class="status-sep">/</span>
+        <span id="remainingTime">00:00</span>
+      </span>
+      <span id="statusRight">v0.2.0</span>
+    </footer>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" accept=".json,.prana" style="display:none">
+
+  <!-- Scripts -->
+  <script src="scripts/session.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>

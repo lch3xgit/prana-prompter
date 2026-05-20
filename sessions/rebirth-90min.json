@@ -1,0 +1,41 @@
+{
+  "name": "Rebirth 90min",
+  "version": "1.0",
+  "created": "2026-05-19T20:00:00.000Z",
+  "modified": "2026-05-19T20:00:00.000Z",
+  "breath": [
+    { "phase": "inhale",   "duration": 2.0, "cue": "Breathe in..." },
+    { "phase": "exhale",   "duration": 1.5, "cue": "Let go..." },
+    { "phase": "hold_out", "duration": 0.5, "cue": null }
+  ],
+  "cues": [
+    { "at": 0,    "text": "Find a comfortable position. Close the eyes. Let the breath begin." },
+    { "at": 60,   "text": "Start with connected breathing. Inhale flows into exhale, no pause." },
+    { "at": 180,  "text": "Deepen the inhale. The exhale is a relaxed release, not a push." },
+    { "at": 300,  "text": "Let the breath become circular. In and out, like a wave." },
+    { "at": 480,  "text": "If tingling or lightheadedness arises — that's normal. Keep breathing." },
+    { "at": 600,  "text": "Breathe into the heart space. Let it open." },
+    { "at": 900,  "text": "Whatever comes up, let it move through you. The breath carries it." },
+    { "at": 1200, "text": "Stay connected. Don't analyze — just breathe and feel." },
+    { "at": 1500, "text": "You may feel energy, emotion, memories. Welcome them all." },
+    { "at": 1800, "text": "The breath is the teacher. Surrender to it." },
+    { "at": 2100, "text": "If your body wants to move, let it. Trust the process." },
+    { "at": 2400, "text": "Halfway point. You're doing beautifully. Stay with the breath." },
+    { "at": 2700, "text": "Let go even more. There's nothing to hold onto." },
+    { "at": 3000, "text": "The breath may want to shift. Follow it wherever it goes." },
+    { "at": 3300, "text": "If tears come, let them flow. If laughter comes, let it ring." },
+    { "at": 3600, "text": "Begin to gently slow the breath. Not yet — but soon." },
+    { "at": 4200, "text": "Soften the inhale. Lengthen the exhale. Come back slowly." },
+    { "at": 4500, "text": "Return to natural breathing. No effort. Rest now." },
+    { "at": 4800, "text": "Integration. Feel the body from head to toe. You are here." },
+    { "at": 5100, "text": "When you're ready, gently wiggle the fingers and toes." },
+    { "at": 5220, "text": "Take your time. Open the eyes when you feel complete." }
+  ],
+  "music": {
+    "source": null,
+    "volume": 0.6,
+    "duckDuringCues": true
+  },
+  "rounds": "auto",
+  "totalDuration": 5400
+}

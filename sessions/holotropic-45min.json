@@ -1,0 +1,31 @@
+{
+  "name": "Holotropic 45min",
+  "version": "1.0",
+  "created": "2026-05-19T20:00:00.000Z",
+  "modified": "2026-05-19T20:00:00.000Z",
+  "breath": [
+    { "phase": "inhale",   "duration": 2.0, "cue": "Breathe in fully..." },
+    { "phase": "exhale",   "duration": 2.0, "cue": null },
+    { "phase": "hold_out", "duration": 1.0, "cue": null }
+  ],
+  "cues": [
+    { "at": 0,    "text": "Settle into your body. Let the breath find its own rhythm." },
+    { "at": 120,  "text": "Begin to deepen the breath. Let each inhale expand the belly." },
+    { "at": 300,  "text": "Allow the breath to become more circular. No pause between inhale and exhale." },
+    { "at": 600,  "text": "Let go of control. Trust the breath. Let it move you." },
+    { "at": 900,  "text": "If sensations arise, breathe into them. Don't resist." },
+    { "at": 1200, "text": "You're halfway. Stay with it. The breath knows the way." },
+    { "at": 1500, "text": "Let the breath soften now. Begin to slow down gently." },
+    { "at": 1800, "text": "Return to your natural breath. No effort. Just rest." },
+    { "at": 2100, "text": "Notice how you feel. Stay present with whatever is here." },
+    { "at": 2400, "text": "Integration period. Let the body settle. Breathe naturally." },
+    { "at": 2610, "text": "When you're ready, begin to bring awareness back. Gently open the eyes." }
+  ],
+  "music": {
+    "source": null,
+    "volume": 0.7,
+    "duckDuringCues": true
+  },
+  "rounds": "auto",
+  "totalDuration": 2700
+}
